@@ -1,1 +1,1 @@
-# AdaaptiveUltrasound
+# AdaptiveUltrasound
