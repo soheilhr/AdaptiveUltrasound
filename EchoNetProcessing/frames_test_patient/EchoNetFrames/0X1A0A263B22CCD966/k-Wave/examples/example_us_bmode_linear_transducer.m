@@ -51,7 +51,7 @@
 clearvars;
 
 % simulation settings
-DATA_CAST       = 'single';     % set to 'single' or 'gpuArray-single' to speed up computations
+DATA_CAST       = 'gpuArray-single';     % set to 'single' or 'gpuArray-single' to speed up computations
 RUN_SIMULATION  = true;         % set to false to reload previous results instead of running simulation
 
 % =========================================================================
@@ -168,45 +168,57 @@ background_map = background_map_mean + background_map_std * randn([Nx_tot, Ny_to
 
 % define a random distribution of scatterers for the highly scattering
 % region
-scattering_map = randn([Nx_tot, Ny_tot, Nz_tot]);
-scattering_c0 = c0 + 25 + 75 * scattering_map;
-scattering_c0(scattering_c0 > 1600) = 1600;
-scattering_c0(scattering_c0 < 1400) = 1400;
-scattering_rho0 = scattering_c0 / 1.5;
+scattering_map = randn([Nx_tot, Ny_tot, Nz_tot]); % random distribution of scatterers
+scattering_c0 = c0 + 25 + 75 * scattering_map; % c0 = 1540. 
+%scattering_c0(scattering_c0 > 1600) = 1600; % max
+%scattering_c0(scattering_c0 < 1400) = 1400; % min
+scattering_rho0 = scattering_c0 / 1.5; % scattering densities ; rho0 = 1000
 
 % define properties
 sound_speed_map = c0 * ones(Nx_tot, Ny_tot, Nz_tot) .* background_map;
 density_map = rho0 * ones(Nx_tot, Ny_tot, Nz_tot) .* background_map;
 
 % define a sphere for a highly scattering region
-radius = 6e-3;      % [m]
-x_pos = 27.5e-3;    % [m]
-y_pos = 20.5e-3;    % [m]
-scattering_region1 = makeBall(Nx_tot, Ny_tot, Nz_tot, round(x_pos/dx), round(y_pos/dx), Nz_tot/2, round(radius/dx));
+phantom = load('test_phantom_patient1_bd5_new_axis.mat');
+ampl = phantom.ampl;
+sca_x = phantom.sca_x;
+sca_z = phantom.sca_z;
+x_axis = phantom.x_axis; 
+z_axis = phantom.z_axis; 
+
+scattering_phantom = [sca_x sca_z];
+% scattering_phantom([X,Z]) = 1;
+sound_speed_map(scattering_phantom == 1) = scattering_c0(scattering_phantom == 1);
+density_map(scattering_phantom == 1) = scattering_rho0(scattering_phantom == 1);
+
+%radius = 6e-3;      % [m]
+%x_pos = 27.5e-3;    % [m]
+%y_pos = 20.5e-3;    % [m]
+%scattering_region1 = makeBall(Nx_tot, Ny_tot, Nz_tot, round(x_pos/dx), round(y_pos/dx), Nz_tot/2, round(radius/dx));
 
 % assign region
-sound_speed_map(scattering_region1 == 1) = scattering_c0(scattering_region1 == 1);
-density_map(scattering_region1 == 1) = scattering_rho0(scattering_region1 == 1);
+%sound_speed_map(scattering_region1 == 1) = scattering_c0(scattering_region1 == 1);
+%density_map(scattering_region1 == 1) = scattering_rho0(scattering_region1 == 1);
 
 % define a sphere for a highly scattering region
-radius = 5e-3;      % [m]
-x_pos = 30.5e-3;    % [m]
-y_pos = 37e-3;      % [m]
-scattering_region2 = makeBall(Nx_tot, Ny_tot, Nz_tot, round(x_pos/dx), round(y_pos/dx), Nz_tot/2, round(radius/dx));
+%radius = 5e-3;      % [m]
+%x_pos = 30.5e-3;    % [m]
+%y_pos = 37e-3;      % [m]
+%scattering_region2 = makeBall(Nx_tot, Ny_tot, Nz_tot, round(x_pos/dx), round(y_pos/dx), Nz_tot/2, round(radius/dx));
 
 % assign region
-sound_speed_map(scattering_region2 == 1) = scattering_c0(scattering_region2 == 1);
-density_map(scattering_region2 == 1) = scattering_rho0(scattering_region2 == 1);
+%sound_speed_map(scattering_region2 == 1) = scattering_c0(scattering_region2 == 1);
+%density_map(scattering_region2 == 1) = scattering_rho0(scattering_region2 == 1);
 
 % define a sphere for a highly scattering region
-radius = 4.5e-3;    % [m]
-x_pos = 15.5e-3;    % [m]
-y_pos = 30.5e-3;    % [m]
-scattering_region3 = makeBall(Nx_tot, Ny_tot, Nz_tot, round(x_pos/dx), round(y_pos/dx), Nz_tot/2, round(radius/dx));
+%radius = 4.5e-3;    % [m]
+%x_pos = 15.5e-3;    % [m]
+%y_pos = 30.5e-3;    % [m]
+%scattering_region3 = makeBall(Nx_tot, Ny_tot, Nz_tot, round(x_pos/dx), round(y_pos/dx), Nz_tot/2, round(radius/dx));
 
 % assign region
-sound_speed_map(scattering_region3 == 1) = scattering_c0(scattering_region3 == 1);
-density_map(scattering_region3 == 1) = scattering_rho0(scattering_region3 == 1);
+%sound_speed_map(scattering_region3 == 1) = scattering_c0(scattering_region3 == 1);
+%density_map(scattering_region3 == 1) = scattering_rho0(scattering_region3 == 1);
 
 % =========================================================================
 % RUN THE SIMULATION
